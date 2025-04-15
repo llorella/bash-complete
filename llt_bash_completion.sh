@@ -3,7 +3,7 @@
 # llt_bash_completion.sh - Bash integration for LLT command autocomplete
 # Add to ~/.bashrc by running: echo "source $(realpath llt_bash_completion.sh)" >> ~/.bashrc
 
-# Function to transform natural language into bash commands with a preview
+# Function to transform natural language into bash commands without preview/confirmation
 function llm_complete_with_preview() {
     local current_line="${READLINE_LINE}"
     
@@ -12,46 +12,27 @@ function llm_complete_with_preview() {
         return
     fi
     
-    # Save cursor position and prepare preview area
-    tput sc
-    tput cud1
-    tput el
-    
-    echo -n "Generating command..."
-    
     # Get command suggestion from helper script
-    local bash_command=$("$HOME/bin/llt_shell_helper.sh" "$current_line")
+    # Use stdbuf to avoid buffering issues that might hide errors
+    local bash_command=$(stdbuf -o0 "$HOME/bin/llt_shell_helper.sh" "$current_line" 2>&1)
     local exit_code=$?
     
     # Check if command generation was successful
     if [ $exit_code -ne 0 ]; then
-        tput el
-        echo -e "\033[31mError generating command\033[0m"
-        sleep 1
-        tput cuu1
-        tput el
-        tput rc
+        # Temporarily display error below the prompt
+        tput sc     # Save cursor position
+        tput cud1   # Move cursor down one line
+        tput el     # Clear the line
+        echo -e "\033[31mError: $bash_command\033[0m" # Display error in red
+        sleep 2     # Show error for 2 seconds
+        tput el     # Clear the error line
+        tput rc     # Restore cursor position
         return
     fi
     
-    # Show preview
-    tput el
-    echo -e "\033[36m$bash_command\033[0m"
-    echo -n "Use this command? [Y/n] "
-    read -n 1 confirm
-    
-    # Clean up preview area
-    tput cuu1
-    tput el
-    tput cuu1
-    tput el
-    tput rc
-    
-    # Apply command if confirmed
-    if [[ "$confirm" != "n" && "$confirm" != "N" ]]; then
-        READLINE_LINE="$bash_command"
-        READLINE_POINT=${#bash_command}
-    fi
+    # Directly replace the line content with the generated command
+    READLINE_LINE="$bash_command"
+    READLINE_POINT=${#bash_command}
 }
 
 # Function to clean older cache files (> 30 days)
@@ -84,6 +65,8 @@ if [ ! -f "$HOME/bin/llt_shell_helper.sh" ]; then
 fi
 
 # Key binding for the completion function
+# Note: The function name is kept for simplicity, even though preview is removed
 bind -x '"\C-x\C-l": llm_complete_with_preview'
 
-echo "LLT Bash Autocomplete loaded. Use Ctrl+X followed by Ctrl+L to get suggestions." 
+# Removed the echo message on load to make it quieter
+# echo "LLT Bash Autocomplete loaded. Use Ctrl+X followed by Ctrl+L to get suggestions." 

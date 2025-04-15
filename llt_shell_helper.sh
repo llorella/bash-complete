@@ -51,7 +51,7 @@ EOF
 
 # LLT command template
 log_message "Calling sonnet to generate command"
-RESPONSE=$(sonnet --non_interactive \
+RESPONSE=$(llt --model claude-3-5-sonnet-20241022 --non_interactive \
   --temperature 0.3 \
   --prompt "$CONTEXT" \
   --xml_wrap "instruction" \

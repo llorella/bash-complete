@@ -169,3 +169,19 @@ The system automatically cleans up the cache periodically, but you can manually 
 ```bash
 find ~/.llt_bash_cache -type f -delete
 ``` 
+
+If you want to make changes to the llt invocation in llt_shell_helper.sh, make sure to copy the llt_shell_helper.sh file to the bin directory and make it executable. You can do this with our tool.
+
+```bash
+$ copy helper script to ~/bin
+[Press Ctrl+X Ctrl+L]
+[Preview]: cp llt_shell_helper.sh ~/bin/
+Use this command? [Y/n]
+```
+
+```bash
+$ make helper script executable
+[Press Ctrl+X Ctrl+L]
+[Preview]: chmod +x ~/bin/llt_shell_helper.sh
+Use this command? [Y/n]
+```
